@@ -28,7 +28,14 @@ def parser():
         type=str,
         help="Requires \n email_address \n password",
     )
-
+    parser.add_argument(
+        "-r",
+        "--redis",
+        action="extend",
+        nargs="+",
+        type=str,
+        help="Requires \n redis host \n redis port",
+    )
     args = parser.parse_args()
     database_name = None
     database_user = None
@@ -37,6 +44,8 @@ def parser():
     database_host = None
     email = None
     password = None
+    redisHost = "127.0.0.1"
+    redisPort = "6379"
     if args.database:
         if len(args.database) != 5:
             print("error parsing arguments")
@@ -55,6 +64,13 @@ def parser():
         email = args.email[0]
         password = args.email[1]
 
+    if args.redis:
+        if len(args.redis) != 2:
+            print("Invalid arguments")
+            return False
+        redisHost = args.redis[0]
+        redisPort = args.redis[1]
+
     secret_key = generate_secret_key(size=60)
 
     with open("config.json", "r") as config:
@@ -66,14 +82,17 @@ def parser():
         env.write(f"DEPLOYMENT_PREFIX={config['deployment_prefix']}")
         env.write(f"CHANNEL={config['channel']}")
         env.write(f"PRODUCTION={config['production']}")
-        env.write(f"DB_NAME={database_name}")
-        env.write(f"DB_USERNAME={database_user}")
-        env.write(f"DB_PASSWORD={database_password}")
-        env.write(f"DB_PORT={database_port}")
-        env.write(f"DB_HOST={database_host}")
+        env.write(f"DATABASE_NAME={database_name}")
+        env.write(f"DATABASE_USERNAME={database_user}")
+        env.write(f"DATABASE_PASSWORD={database_password}")
+        env.write(f"DATABASE_PORT={database_port}")
+        env.write(f"DATABASE_HOST={database_host}")
         env.write(f"EMAIL_HOST_USER={email}")
         env.write(f"EMAIL_USER_PASSWORD={password}")
         env.write(f"DEFAULT_FROM_EMAIL={email}")
+        env.write(f"REDIS_URL=redis://{redisHost}")
+        env.write(f"REDIS_PORT={redisPort}")
+        env.write(f"PREFIX={config['prefix']}")
     print("Environment file generated")
 
 

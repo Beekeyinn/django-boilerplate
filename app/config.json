@@ -3,5 +3,6 @@
     "development_name":"domain_name",
     "deployment_prefix":"www",
     "timezone":"Asia/Kathmandu",
-    "channel":"1" 
+    "channel":"1",
+    "prefix":"localhost" 
 }

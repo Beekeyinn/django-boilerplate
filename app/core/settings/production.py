@@ -1,4 +1,3 @@
-import mimetypes
 import os
 from pathlib import Path
 
@@ -15,15 +14,13 @@ DATABASES = {
     "default": {
         "ENGINE": f"django.db.backends.{os.getenv('DATABASE_ENGINE')}",
         "NAME": os.getenv("DATABASE_NAME"),
-        "USER": os.getenv("DATABASE_USER"),
+        "USER": os.getenv("DATABASE_USERNAME"),
         "PASSWORD": os.getenv("DATABASE_PASSWORD"),
         "PORT": os.getenv("DATABASE_PORT"),
         "HOST": os.getenv("DATABASE_HOST"),
     }
 }
 
-mimetypes.add_type("text/css", ".css", True)
-mimetypes.add_type("script", ".js", True)
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True

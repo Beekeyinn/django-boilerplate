@@ -1,0 +1,100 @@
+name: Django CI/CD, Postgres, Ubuntu
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  health-check-job:
+    runs-on: ubuntu-latest
+    services:
+      postgres_service:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_DATABASE: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Cache dependency
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Setup python 3.9 environment
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.9.x
+
+      - name: Check python version
+        run: python --version
+
+      - name: creating virtual env and activating it
+        working-directory: "."
+        run: |
+          pip install --upgrade pip
+          python3 -m venv env
+          source env/bin/activate
+          echo "virtual env: $VIRTUAL_ENV"
+
+      - name: check list
+        working-directory: "."
+        run: "ls"
+
+      - name: Install requirements
+        run: pip install -r requirements.txt
+
+      - name: Generate env file
+        working-directory: ./website
+        run: python3 generate_env.py
+
+      - name: collect static files
+        working-directory: ./website
+        run: python3 manage.py collectstatic --noinput
+
+      - name: Seeding the database
+        working-directory: ./website
+        run: |
+          chmod +x seeder.sh
+          ./seeder.sh
+
+      - name: Start redis
+        uses: supercharge/redis-github-action@1.2.0
+        with:
+          redis-version: 5.0.14
+
+      # - name: Run Tests
+      #   env:
+      #     DEBUG: True
+      #     SECRET_KEY: DJANGO-CI-CD-TEST-KEY
+      #     POSTGRES_USER: postgres
+      #     POSTGRES_PASSWORD: postgres
+      #     POSTGRES_DATABASE: test
+      #     POSTGRES_PORT: 5432
+      #   run: python3 manage.py test
+
+  # auto-deploy-job:
+  #   needs: [health-check-job]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Deploy using ssh
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{server.ip address]}
+  #         username: ${{server_username}}
+  #         key: ${{ ssh.key provided by server }}
+  #         port: ${{ ssh.port }}
+  #         script: ${{ secrets.SCRIPTS }}

@@ -15,10 +15,16 @@
 
 - The may here represent the upcoming functionalities
 
+## Deployment
+
+`Deployment setup is based on script. It is fully manual. (using ubuntu VPS)`
+
 ### Steps to follow after cloning
+
 <pre>
     `pip install -r requirements.txt`
 </pre>
+
 ### The packages used are:
 
 - django
