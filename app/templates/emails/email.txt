@@ -1,0 +1,8 @@
+
+{{message}}
+
+    {% if obj %}
+        {% for key in obj.keys() %}
+            {{obj.key}}
+        {% endfor %}
+    {% endif %}
