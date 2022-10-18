@@ -1,8 +1,8 @@
 {
-    "production":false,
-    "development_name":"domain_name",
-    "deployment_prefix":"www",
-    "timezone":"Asia/Kathmandu",
-    "channel":"1",
-    "prefix":"localhost" 
+  "production": false,
+  "deployment_name": "domain_name",
+  "deployment_prefix": "www",
+  "timezone": "Asia/Kathmandu",
+  "channel": "1",
+  "prefix": "localhost"
 }

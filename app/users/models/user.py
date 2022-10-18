@@ -1,3 +1,4 @@
+from core.mixins import ExtraFieldModelMixin
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -21,7 +22,7 @@ class UserManager(BaseUserManager):
 
         user = self.model(
             email=self.normalize_email(email),
-            mobile=self.mobile,
+            mobile=mobile,
             is_active=is_active,
             is_admin=is_staff,
         )
@@ -34,7 +35,7 @@ class UserManager(BaseUserManager):
     ):
         user = self.create_user(
             email,
-            mobile,
+            mobile=mobile,
             password=password,
             is_staff=is_staff,
             is_active=is_active,
@@ -44,7 +45,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, ExtraFieldModelMixin, PermissionsMixin):
 
     mobile_regex = RegexValidator(
         regex=r"^\+[1-9]{1,3}[789][0-9]{9}$",
@@ -59,10 +60,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=14,
         validators=[mobile_regex],
         unique=True,
-        editable=False,
         null=False,
         blank=False,
-        help_text="Please use following format: <Country code><mobile-number>",
+        help_text="Please use following format: Country_code mobile-number",
     )
 
     is_active = models.BooleanField(_("Active"), default=False)

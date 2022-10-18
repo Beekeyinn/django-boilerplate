@@ -32,3 +32,21 @@ STATICFILES_DIR = [
     os.path.join(BASE_DIR, "static"),
 ]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+
+# CORS_ALLOWED_ORIGINS = [
+#     ""
+# ]
+# CORS_ALLOW_HEADERS = [
+#     "accept",
+#     "accept-encoding",
+#     "authorization",
+#     "content-type",
+#     "origin",
+#     "user-agent",
+#     "x-csrftoken",
+#     "x-requested-with",
+# ]
+
+# CSRF_TRUSTED_ORIGINS = [
+#     "",
+# ]

@@ -1,4 +1,4 @@
-# This is the boilerplate for the Django Project
+# This is the boilerplate for the Django Project (Rest API)
 
 ## This Project includes the basic setup for the project
 

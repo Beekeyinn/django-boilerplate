@@ -27,12 +27,17 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
+    "users",
+    "rest_framework",
+    "corsheaders",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -55,7 +60,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
             ],
             "libraries": {
-                "customTags": "user.templateTags.tags",
+                "customTags": "users.templateTags.tags",
             },
         },
     },
@@ -106,6 +111,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIR = [
     os.path.join(BASE_DIR, "static"),
 ]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 CHANNEL = os.getenv("CHANNEL")
 REDIS_URL = f'{os.getenv("REDIS_URL")}:{os.getenv("REDIS_PORT")}/{CHANNEL}'
 # CACHE management SETTINGS
@@ -132,6 +141,13 @@ mimetypes.add_type("application/javascript", ".js", True)
 mimetypes.add_type("text/css", ".css", True)
 
 WHITENOISE_MIMETYPES = {".js": "application/javascript", ".css": "text/css"}
+CORS_ALLOW_ALL_ORIGINS = True
+
+if os.getenv("PRODUCTION") == "TRUE":
+    from .production import *
+else:
+    from .development import *
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
