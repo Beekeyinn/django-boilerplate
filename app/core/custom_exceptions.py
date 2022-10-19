@@ -8,7 +8,7 @@ def get_exception_traceback(ex: Exception) -> str:
 
 
 class FieldDoesNotExist(Exception):
-    def __init__(self, instance, field_name, message="Field does not exists")->None:
+    def __init__(self, instance, field_name, message="Field does not exists") -> None:
         self.instance = instance
         self.field_name - field_name
         self.message = message
@@ -17,3 +17,12 @@ class FieldDoesNotExist(Exception):
     def __str__(self) -> str:
         fields = " ".join([f"'{key}'" for key in self.instance.__dict__.keys()])
         return f"{self.__class__} -> {self.field_name} -> doest not exist in {self.instance.__class__}:[ {fields} ]"
+
+
+class FormatException(Exception):
+    def __init__(self, message, *args: object) -> None:
+        self.message = message
+        super().__init__(self, self.message)
+
+    def __str__(self) -> str:
+        return f"{self.__class__} -> {self.message}"

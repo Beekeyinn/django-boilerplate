@@ -143,6 +143,10 @@ mimetypes.add_type("text/css", ".css", True)
 WHITENOISE_MIMETYPES = {".js": "application/javascript", ".css": "text/css"}
 CORS_ALLOW_ALL_ORIGINS = True
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 100214400
+FILE_UPLOAD_MAX_MEMORY_SIZE = 100214400
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100214400
+
 if os.getenv("PRODUCTION") == "TRUE":
     from .production import *
 else:

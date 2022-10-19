@@ -1,4 +1,6 @@
 import os
+import re
+from datetime import datetime
 
 from app.core.custom_exceptions import FieldDoesNotExist
 
@@ -24,3 +26,8 @@ def check_and_remove_file(instance, field_name):
         print(file_exception)
     except Exception as e:
         print(e)
+
+
+def datetime_to_str(datetime: datetime, replacer="-"):
+    datetime_str = re.sub(r"[\s:.]", replacer, str(datetime))
+    return datetime_str
