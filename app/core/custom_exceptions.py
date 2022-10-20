@@ -1,3 +1,8 @@
+from django.utils.translation import gettext_lazy as _
+from rest_framework import status
+from rest_framework.exceptions import APIException
+
+
 def get_exception_traceback(ex: Exception) -> str:
     traceback = ex.__traceback__
     traces = ""
@@ -26,3 +31,9 @@ class FormatException(Exception):
 
     def __str__(self) -> str:
         return f"{self.__class__} -> {self.message}"
+
+
+class InvalidTokenType(APIException):
+    status_code = status.HTTP_406_NOT_ACCEPTABLE
+    default_detail = _("Invalid Token Type")
+    default_code = "invalid token type"

@@ -1,6 +1,5 @@
-from core.permissions import IsOwnerOrIsAdmin
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from users.models.user import User
@@ -8,7 +7,7 @@ from users.serializers.user import UserSerializer
 
 
 class UserListAPIView(APIView):
-    permission_classes = [IsAuthenticated | IsAdminUser & IsOwnerOrIsAdmin]
+    permission_classes = [IsAdminUser]
 
     def get(self, request, *args, **kwargs) -> Response:
         users = User.objects.all()
