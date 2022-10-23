@@ -1,23 +1,33 @@
 from typing import Dict, Union
 from urllib import response
 
-from app.core.custom_exceptions import InvalidTokenType
+import jwt
 from django.conf import settings
 from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest
 from rest_framework.exceptions import NotAuthenticated
+from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from users.models import User
+
+from core.custom_exceptions import InvalidTokenType
 
 
 class UserCacheManagement:
 
-    _access_token_lifetime = settings.SIMPLE_JWT.get("ACCESS_TOKEN_LIFETIME")
-    _refresh_token_lifetime = settings.SIMPLE_JWT.get("REFRESH_TOKEN_LIFETIME")
     """
     cache -> (access token, refresh token)
     cache -> (refresh token, access token)
     cache -> (user_{refresh_token}, user)
     """
+
+    _access_token_lifetime: float = settings.SIMPLE_JWT.get(
+        "ACCESS_TOKEN_LIFETIME"
+    ).total_seconds()
+    _refresh_token_lifetime: float = settings.SIMPLE_JWT.get(
+        "REFRESH_TOKEN_LIFETIME"
+    ).total_seconds()
 
     def __init__(
         self, token: str, refresh_token: Union[str, None], expire_time: float
@@ -27,6 +37,18 @@ class UserCacheManagement:
             self.refresh_token = refresh_token
         self.expire_time = expire_time
 
+    @property
+    def user(self) -> User:
+        token_payload = jwt.decode(self.token)
+        if token_payload.token_type == "access":
+            user_id = token_payload.get("user_id")
+            try:
+                user = User.objects.get(id=user_id)
+                return user
+            except User.DoesNotExist as e:
+                raise ObjectDoesNotExist(e.args[0])
+        raise InvalidToken()
+
     @classmethod
     def get_user(cls, token):
         return cache.get(f"user__{cache.get(token)}")
@@ -35,6 +57,10 @@ class UserCacheManagement:
         """
         TODO: assign tokens in cache with expire time
         """
+        cache.set(self.refresh_token, self.token, self._refresh_token_lifetime)
+        cache.set(self.token, self.refresh_token, self._access_token_lifetime)
+        payload = jwt.decode(self.token)
+        cache.set(f"user_{self.refresh_token}", self.user, self._refresh_token_lifetime)
         return True
 
     @classmethod
@@ -56,7 +82,7 @@ class UserCacheManagement:
             new_token.set_caches()
         else:
             raise Exception("Refresh Token Black Listed. Login Again")
-        return {"access": new_token.token, "refresh": new_token.refresh_token}
+        return {"access": str(new_token.token), "refresh": str(new_token.refresh_token)}
 
 
 class APIAuthenticationMiddleware:
