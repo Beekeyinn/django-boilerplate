@@ -4,7 +4,7 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
-from django.core.validators import RegexValidator
+from django.core.validators import MinLengthValidator, RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -48,9 +48,10 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, ExtraFieldModelMixin, PermissionsMixin):
 
     mobile_regex = RegexValidator(
-        regex=r"^\+[1-9]{1,3}[789][0-9]{9}$",
+        # regex=r"^\+[1-9]{1,3}[789][0-9]{9}$", ->universal
+        regex=r"^9[0-9]{9}$",  # -> nepal only
         message=_(
-            "phone number should at least contain 10 digit with country code. eg: +9776568456545 "
+            "phone number should at least contain 10 digit with country code. eg: 9568456545 "
         ),
     )
 
@@ -58,7 +59,7 @@ class User(AbstractBaseUser, ExtraFieldModelMixin, PermissionsMixin):
     mobile = models.CharField(
         _("Phone number"),
         max_length=14,
-        validators=[mobile_regex],
+        validators=[mobile_regex, MinLengthValidator(10)],
         unique=True,
         null=False,
         blank=False,

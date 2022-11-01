@@ -3,7 +3,7 @@ from datetime import datetime
 from uuid import uuid4
 
 import six
-from app.core.custom_exceptions import FormatException
+from core.custom_exceptions import FormatException
 from django.core.files.base import ContentFile
 from rest_framework.serializers import ImageField
 
@@ -12,8 +12,9 @@ from core.utils import datetime_to_str
 
 class Base64Field(ImageField):
     """
-        Accepts Base64 encoded file and converts it into file with unique name 
+    Accepts Base64 encoded file and converts it into file with unique name
     """
+
     def to_internal_value(self, data: str):
         try:
             if isinstance(data, six.string_types) and data.startswith("data:image"):

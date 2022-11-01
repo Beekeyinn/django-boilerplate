@@ -2,9 +2,9 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from app.core.celery import app
 from celery import shared_task
-from core.custom_exceptions import get_exception_traceback
+from core.celery import app
+from core.custom_exceptions import Traces
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
@@ -39,8 +39,9 @@ def write_log(file_name: str, exception: Exception, level: str) -> str:
     with open(path, "a+") as log:
         for count, lines in enumerate(log):
             pass
+        tracebacks = Traces(exception)
         log.writelines(
-            f"{count+1} [ {datetime.now()} ] % {level.upper()} % -> {exception.__class__} : {exception} % traceback % {get_exception_traceback(exception)}"
+            f"{count+1} [ {datetime.now()} ] % {level.upper()} % -> {exception.__class__} : {exception} % traceback % {tracebacks.traces_to_str}"
         )
 
     if (

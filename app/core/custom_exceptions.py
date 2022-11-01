@@ -1,18 +1,40 @@
+import json
+from typing import Dict, List
+
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
 
-def get_exception_traceback(ex: Exception) -> str:
-    traceback = ex.__traceback__
-    traces = ""
-    while traceback is not None:
-        traces += f"[\n\tfilename: {traceback.tb_frame.f_code.co_filename} \n\tname: {traceback.tb_frame.f_code.co_name} \n\tline no: {traceback.tb_lineno}\n]\n"
-        traceback = traceback.tb_next
-    return traces
+class Traces:
+    def __init__(self, exception: Exception) -> None:
+        self.exception = exception
+        self.traces = self.get_exception_traceback()
+
+    def get_exception_traceback(self) -> List[Dict]:
+        traceback = self.exception.__traceback__
+        traces = []
+        while traceback is not None:
+            traces.append(
+                {
+                    "filename": traceback.tb_frame.f_code.co_filename,
+                    "name": traceback.tb_frame.f_code.co_name,
+                    "line_no": traceback.tb_lineno,
+                }
+            )
+            traceback = traceback.tb_next
+        return traces
+
+    @property
+    def traces_to_str(self) -> str:
+        pre_str_traces = [
+            json.dumps(trace, indent=4, separators=(",", ":")) for trace in self.traces
+        ]
+        str_traces = "\n".join(pre_str_traces)
+        return f"[\n{str_traces}\n]"
 
 
-class FieldDoesNotExist(Exception):
+class FieldDoesNotExist(APIException):
     def __init__(self, instance, field_name, message="Field does not exists") -> None:
         self.instance = instance
         self.field_name - field_name
@@ -24,7 +46,7 @@ class FieldDoesNotExist(Exception):
         return f"{self.__class__} -> {self.field_name} -> doest not exist in {self.instance.__class__}:[ {fields} ]"
 
 
-class FormatException(Exception):
+class FormatException(APIException):
     def __init__(self, message, *args: object) -> None:
         self.message = message
         super().__init__(self, self.message)

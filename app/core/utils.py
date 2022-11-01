@@ -2,7 +2,9 @@ import os
 import re
 from datetime import datetime
 
-from app.core.custom_exceptions import FieldDoesNotExist
+from rest_framework.views import exception_handler
+
+from core.custom_exceptions import FieldDoesNotExist
 
 
 def remove_file(path):
@@ -31,3 +33,11 @@ def check_and_remove_file(instance, field_name):
 def datetime_to_str(datetime: datetime, replacer="-"):
     datetime_str = re.sub(r"[\s:.]", replacer, str(datetime))
     return datetime_str
+
+
+def custom_exception_handler(exc, context):
+    response = exception_handler(exc, context)
+    """
+        TODO: Can have logger here too as per exception type (use custom Exception derived from Exception)
+    """
+    return response

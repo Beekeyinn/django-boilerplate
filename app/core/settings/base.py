@@ -13,7 +13,7 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
-
+PRODUCTION = os.getenv("PRODUCTION") == "TRUE"
 # SECURITY WARNING: don't run with debug turned on in production!
 
 
@@ -38,13 +38,16 @@ INSTALLED_APPS = [
 ] + THIRD_PARTY_PACKAGES
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    # Remove on production -> required for django admin pages
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.middleware.AuthorizationMiddleware",
+    "core.middleware.APIAuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -102,23 +105,23 @@ USE_L10N = True
 
 USE_TZ = True
 
-LOGIN_NOT_REQUIRED_URLS = [
-    "/login/",
-    "/logout/",
-    "/token/refresh/",
-]
+LOGIN_NOT_REQUIRED_URLS = [r"/auth/*", r"/admin/*", r"/swagger/"]
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",),
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    "EXCEPTION_HANDLER": "core.utils.custom_exception_handler",
+    # "DEFAULT_AUTHENTICATION_CLASSES": ("core.middleware.APIAuthenticationMiddleware",),
 }
 from datetime import timedelta
 
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {"type": "apiKey", "name": "Authentication", "in": "header"},
+    }
+}
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
@@ -126,7 +129,7 @@ SIMPLE_JWT = {
     "SIGNING_KEY": SECRET_KEY,
     "VERIFYING_KEY": None,
     "AUTH_HEADER_TYPES": ("Bearer",),
-    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "AUTH_HEADER_NAME": "HTTP_AUTHENTICATION",
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),

@@ -12,3 +12,12 @@ class IsOwnerOrIsAdmin(IsAuthenticated):
                 or request.user == obj.owner
             )
         return False
+
+
+class IsOwner(IsAuthenticated):
+    def has_object_permission(self, request, view, obj):
+        if super().has_object_permission():
+            if request.user == obj:
+                return True
+            return False
+        return False
